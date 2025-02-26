@@ -5,13 +5,13 @@ import { connectToDatabase } from '@/lib/db';
 // Example: DELETE /api/favorites/[id]
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { db } = await connectToDatabase();
     const favoritesCollection = db.collection('favorites');
     
-    const favoriteId = params.id;
+    const favoriteId = (await params).id;
     
     if (!favoriteId) {
       return NextResponse.json(

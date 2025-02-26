@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { connectToDatabase } from '@/lib/db';
+import { Filter, Document as MongoDocument } from 'mongodb';
 
 // Get all albums with optional genre and artist filters
 // Example: GET /api/albums?genre=rock&artist=Pink Floyd
@@ -12,7 +13,7 @@ export async function GET(request: Request) {
   const albumsCollection = db.collection('albums');
   
   // Build the query
-  const query: any = {};
+  const query: Filter<MongoDocument> = {};
   
   if (genre) {
     query.genre = { $regex: genre, $options: 'i' };
