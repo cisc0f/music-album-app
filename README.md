@@ -12,7 +12,7 @@ A full-stack music application built with Next.js that allows users to browse al
 
 ## Tech Stack
 
-- **Frontend**: Next.js 14, React, Tailwind CSS
+- **Frontend**: Next.js 15, React, Tailwind CSS
 - **Backend**: Next.js API routes
 - **Database**: MongoDB
 - **Authentication**: NextAuth.js
