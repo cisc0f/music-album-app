@@ -1,4 +1,4 @@
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db, Document } from 'mongodb';
 import albumsData from '@/lib/data/albums.json';
 
 // Create module-level variables for the singleton pattern
@@ -48,7 +48,7 @@ async function initializeDatabase() {
     const userIndexes = await usersCollection.listIndexes().toArray();
     
     // Helper function to check if an index exists
-    const indexExists = (indexes: any[], fieldName: string) => {
+    const indexExists = (indexes: Document[], fieldName: string) => {
       return indexes.some(index => index.key && index.key[fieldName] !== undefined);
     };
     

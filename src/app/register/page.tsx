@@ -35,7 +35,7 @@ export default function Register() {
         const data = await response.json();
         toast.error(data.message || "Failed to create account");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred during registration");
     } finally {
       setIsLoading(false);

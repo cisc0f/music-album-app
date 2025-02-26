@@ -3,8 +3,6 @@
 import { Home, Heart, LogIn, UserPlus, Music } from "lucide-react"
 import { useSession, signOut } from "next-auth/react"
 import Link from "next/link"
-import { SidebarHeader, useSidebar } from "@/components/ui/sidebar"
-
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarHeader
 } from "@/components/ui/sidebar"
 
 const navItems = [
@@ -33,12 +32,11 @@ const navItems = [
 export function AppSidebar() {
   const { data: session, status } = useSession()
   const isAuthenticated = status === "authenticated"
-  const { isMobile } = useSidebar()
 
   return (
     <Sidebar collapsible="icon">
-        {/* Company Logo and Name */}
-        <SidebarHeader>
+      {/* Company Logo and Name */}
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -57,7 +55,7 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        </SidebarHeader>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>

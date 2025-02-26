@@ -24,7 +24,7 @@ export default function Favorites() {
   const [favorites, setFavorites] = useState<Album[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { data: session, status } = useSession();
+  const { status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
@@ -112,7 +112,7 @@ export default function Favorites() {
       {!isLoading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
           {favorites.length === 0 ? (
-            <p>You haven't added any favorites yet.</p>
+            <p>You haven&apos;t added any favorites yet.</p>
           ) : (
             favorites.map(favorite => (
               <Card key={favorite.id} className="flex flex-col justify-between h-full w-full">
