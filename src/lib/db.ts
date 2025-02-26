@@ -1,25 +1,26 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import { MongoClient, Db } from 'mongodb';
 import albumsData from '@/lib/data/albums.json';
 
 // Create module-level variables for the singleton pattern
-let mongoServer: MongoMemoryServer;
 let client: MongoClient;
 let db: Db;
 let isConnected = false;
 let isInitialized = false;
 
-// Initialize the in-memory MongoDB
+// Initialize the MongoDB Atlas connection
 export async function connectToDatabase() {
   if (isConnected) return { db, client };
 
-  // Start the MongoDB memory server if not already started
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
+  // MongoDB Atlas connection string
+  const uri = process.env.MONGODB_URI || '';
+  
+  if (!process.env.MONGODB_URI) {
+    console.warn('Warning: MONGODB_URI not found in environment variables. Using fallback URI which will not work without proper credentials.');
+  }
   
   client = new MongoClient(uri);
   await client.connect();
-  db = client.db('music-app');
+  db = client.db(process.env.MONGODB_DB_NAME || 'music-app');
   
   // Only seed the database once when the server starts
   if (!isInitialized) {
@@ -57,6 +58,5 @@ export async function closeDatabase() {
   if (!isConnected) return;
   
   await client.close();
-  await mongoServer.stop();
   isConnected = false;
 } 
