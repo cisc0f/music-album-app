@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { albums } from './albums'
+import { connectToDatabase } from '@/lib/db';
 
 // Get all albums with optional genre and artist filters
 // Example: GET /api/albums?genre=rock&artist=Pink Floyd
@@ -8,21 +8,20 @@ export async function GET(request: Request) {
   const genre = searchParams.get('genre')
   const artist = searchParams.get('artist')
   
-  let filteredAlbums = [...albums]
+  const { db } = await connectToDatabase();
+  const albumsCollection = db.collection('albums');
   
-  // Filter by genre if provided
+  // Build the query
+  const query: any = {};
+  
   if (genre) {
-    filteredAlbums = filteredAlbums.filter(album => 
-      album.genre.toLowerCase().includes(genre.toLowerCase())
-    )
+    query.genre = { $regex: genre, $options: 'i' };
   }
   
-  // Filter by artist if provided
   if (artist) {
-    filteredAlbums = filteredAlbums.filter(album => 
-      album.artist.toLowerCase().includes(artist.toLowerCase())
-    )
+    query.artist = { $regex: artist, $options: 'i' };
   }
   
-  return NextResponse.json(filteredAlbums)
+  const albums = await albumsCollection.find(query).toArray();
+  return NextResponse.json(albums);
 }

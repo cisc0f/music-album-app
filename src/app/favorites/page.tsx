@@ -57,7 +57,7 @@ export default function Favorites() {
 
   return (
     <div className="w-full pt-5">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center pb-5">
             <h1 className="text-2xl font-bold">Favorites</h1>
             <AlertDialog>
                 <AlertDialogTrigger 

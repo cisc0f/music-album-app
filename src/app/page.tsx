@@ -53,29 +53,44 @@ export default function Home() {
     fetchAlbumsAndFavorites();
   }, [genre, artist]);
 
-  const addFavorite = async (album: Album) => {
+  const toggleFavorite = async (album: Album) => {
     try {
-      const response = await fetch('/api/favorites', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(album),
-      });
+      if (favoriteAlbums.has(album.id)) {
+        // Remove from favorites
+        const response = await fetch(`/api/favorites/${album.id}`, {
+          method: 'DELETE',
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to add to favorites');
+        if (!response.ok) {
+          throw new Error('Failed to remove from favorites');
+        }
+
+        // Remove album from local favorite state
+        const newFavorites = new Set(favoriteAlbums);
+        newFavorites.delete(album.id);
+        setFavoriteAlbums(newFavorites);
+        toast.success('Album removed from favorites');
+      } else {
+        // Add to favorites
+        const response = await fetch('/api/favorites', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(album),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to add to favorites');
+        }
+
+        // Add album to local favorite state
+        setFavoriteAlbums(prev => new Set(prev).add(album.id));
+        toast.success('Album added to favorites');
       }
-
-      const data = await response.json();
-      console.log('Added to favorites:', data);
-
-      // Add album to local favorite state
-      setFavoriteAlbums(prev => new Set(prev).add(album.id));
-      toast.success('Album added to favorites');
     } catch (error) {
-      console.error('Error adding to favorites:', error);
-      toast.error('Failed to add to favorites');
+      console.error('Error toggling favorite:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update favorites');
     }
   };
 
@@ -110,7 +125,7 @@ export default function Home() {
                 </div>
                 <button
                   className={`flex items-center ${favoriteAlbums.has(album.id) ? 'text-red-500' : 'text-gray-300 hover:text-gray-500'}`}
-                  onClick={() => addFavorite(album)}
+                  onClick={() => toggleFavorite(album)}
                 >
                   <Heart className="w-5 h-5" fill={favoriteAlbums.has(album.id) ? '#ef4444' : 'none'} />
                 </button>
