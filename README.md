@@ -46,7 +46,7 @@ A full-stack music application built with Next.js that allows users to browse al
    ```
 
 3. Set up environment variables:
-   Create a `.env.local` file in the root directory with the following variables:
+   Create a `.env` file in the root directory with the following variables:
    ```
    MONGODB_URI="your_mongodb_connection_string"
    MONGODB_DB_NAME="music-app"
