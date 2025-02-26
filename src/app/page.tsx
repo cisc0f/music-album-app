@@ -26,23 +26,31 @@ export default function Home() {
           query += `${query ? "&" : "?"}genre=${genre}`;
         }
 
-        const [albumsResponse, favoritesResponse] = await Promise.all([
-          fetch(`/api/albums${query}`),
-          fetch('/api/favorites')
-        ]);
-
+        // First fetch albums which doesn't require authentication
+        const albumsResponse = await fetch(`/api/albums${query}`);
         if (!albumsResponse.ok) {
           throw new Error("Failed to fetch albums");
         }
-        if (!favoritesResponse.ok) {
-          throw new Error("Failed to fetch favorite albums");
-        }
-
         const albumsData = await albumsResponse.json();
-        const favoritesData: Album[] = await favoritesResponse.json();
-
         setAlbums(albumsData);
-        setFavoriteAlbums(new Set(favoritesData.map(album => album.id)));
+
+        // Try to fetch favorites, but handle unauthorized case gracefully
+        try {
+          const favoritesResponse = await fetch('/api/favorites');
+          if (favoritesResponse.ok) {
+            const favoritesData: Album[] = await favoritesResponse.json();
+            setFavoriteAlbums(new Set(favoritesData.map(album => album.id)));
+          } else if (favoritesResponse.status === 401) {
+            // User is not authenticated, just use empty favorites
+            setFavoriteAlbums(new Set());
+          } else {
+            throw new Error("Failed to fetch favorite albums");
+          }
+        } catch (error) {
+          console.error("Favorites fetch error:", error);
+          // Don't fail the whole page if favorites can't be fetched
+          setFavoriteAlbums(new Set());
+        }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
@@ -60,6 +68,11 @@ export default function Home() {
         const response = await fetch(`/api/favorites/${album.id}`, {
           method: 'DELETE',
         });
+
+        if (response.status === 401) {
+          toast.error('Please log in to manage favorites');
+          return;
+        }
 
         if (!response.ok) {
           throw new Error('Failed to remove from favorites');
@@ -79,6 +92,11 @@ export default function Home() {
           },
           body: JSON.stringify(album),
         });
+
+        if (response.status === 401) {
+          toast.error('Please log in to manage favorites');
+          return;
+        }
 
         if (!response.ok) {
           throw new Error('Failed to add to favorites');
