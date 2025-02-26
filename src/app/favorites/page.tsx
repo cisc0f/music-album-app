@@ -4,7 +4,18 @@ import { useState, useEffect } from "react";
 import { Album } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { 
+    AlertDialog, 
+    AlertDialogTrigger, 
+    AlertDialogTitle, 
+    AlertDialogDescription, 
+    AlertDialogHeader, 
+    AlertDialogCancel, 
+    AlertDialogAction, 
+    AlertDialogContent, 
+    AlertDialogFooter 
+} from "@/components/ui/alert-dialog";
+import AlbumAvatar from "@/components/album-avatar";
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState<Album[]>([]);
@@ -38,7 +49,7 @@ export default function Favorites() {
       if (!response.ok) {
         throw new Error("Failed to delete favorites");
       }
-      setFavorites([]); // Clear the favorites state
+      setFavorites([]);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
     }
@@ -46,14 +57,32 @@ export default function Favorites() {
 
   return (
     <div className="w-full pt-5">
-      <h1 className="text-2xl font-bold pb-5">Favorites</h1>
-      <Button 
-        onClick={removeAllFavorites} 
-        className="mb-5 px-4 py-2 bg-red-500 text-white rounded"
-        disabled={favorites.length === 0}
-      >
-        Remove All Favorites
-      </Button>
+        <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Favorites</h1>
+            <AlertDialog>
+                <AlertDialogTrigger 
+                className={`px-4 py-2 rounded ${favorites.length === 0 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-red-500 text-white'}`}
+                disabled={favorites.length === 0}
+                >
+                Remove All Favorites
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        You are about to remove all your favorites. This action cannot be undone.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={removeAllFavorites}>Continue</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </div>
+        
       {isLoading && <p>Loading...</p>}
       {error && <p className="text-red-500">Error: {error}</p>}
       {!isLoading && !error && (
@@ -61,9 +90,12 @@ export default function Favorites() {
           {favorites.map(favorite => (
             <Card key={favorite.id} className="flex flex-col justify-between h-full w-full">
               <CardHeader className="flex flex-row justify-between items-start">
-                <div>
-                  <CardTitle>{favorite.title}</CardTitle>
-                  <CardDescription>by {favorite.artist}</CardDescription>
+              <div className="flex flex-row gap-3 items-center justify-center">
+                  <AlbumAvatar />
+                  <div className="flex flex-col justify-center">
+                    <CardTitle>{favorite.title}</CardTitle>
+                    <CardDescription>by {favorite.artist}</CardDescription>
+                  </div>
                 </div>
                 <Heart fill="#ef4444" className="w-5 h-5 text-red-500" />
               </CardHeader>

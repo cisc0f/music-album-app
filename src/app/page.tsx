@@ -4,6 +4,8 @@ import { Album } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
+import AlbumAvatar from "@/components/album-avatar";
 
 export default function Home() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -70,20 +72,21 @@ export default function Home() {
 
       // Add album to local favorite state
       setFavoriteAlbums(prev => new Set(prev).add(album.id));
+      toast.success('Album added to favorites');
     } catch (error) {
       console.error('Error adding to favorites:', error);
+      toast.error('Failed to add to favorites');
     }
   };
 
   return (
     <div className="w-full pt-5">
       <h1 className="text-2xl font-bold pb-5">Albums</h1>
-      <div className="mb-4">
+      <div className="mb-4 flex flex-row gap-5">
         <Input
           placeholder="Search by artist"
           value={artist}
           onChange={(e) => setArtist(e.target.value)}
-          className="mb-2"
         />
         <Input
           placeholder="Search by genre"
@@ -98,9 +101,12 @@ export default function Home() {
           {albums.map(album => (
             <Card key={album.id} className="flex flex-col justify-between h-full w-full">
               <CardHeader className="flex flex-row justify-between items-start">
-                <div>
-                  <CardTitle>{album.title}</CardTitle>
-                  <CardDescription>by {album.artist}</CardDescription>
+                <div className="flex flex-row gap-3 items-center justify-center">
+                  <AlbumAvatar />
+                  <div className="flex flex-col justify-center">
+                    <CardTitle>{album.title}</CardTitle>
+                    <CardDescription>by {album.artist}</CardDescription>
+                  </div>
                 </div>
                 <button
                   className={`flex items-center ${favoriteAlbums.has(album.id) ? 'text-red-500' : 'text-gray-300 hover:text-gray-500'}`}

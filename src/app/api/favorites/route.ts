@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { favorites } from './db'
+import { favorites } from './favorites'
 
 // Get all favorites
 // Example: GET /api/favorites
