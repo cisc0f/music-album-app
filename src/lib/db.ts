@@ -38,12 +38,49 @@ async function initializeDatabase() {
   
   const albumsCollection = db.collection('albums');
   const favoritesCollection = db.collection('favorites');
+  const usersCollection = db.collection('users');
   
-  // Create indexes for better query performance
-  await albumsCollection.createIndex({ artist: 1 });
-  await albumsCollection.createIndex({ genre: 1 });
-  await albumsCollection.createIndex({ release_year: 1 });
-  await favoritesCollection.createIndex({ id: 1 }, { unique: true });
+  // Check and create indexes for better query performance
+  try {
+    // Get existing indexes for each collection
+    const albumIndexes = await albumsCollection.listIndexes().toArray();
+    const favoriteIndexes = await favoritesCollection.listIndexes().toArray();
+    const userIndexes = await usersCollection.listIndexes().toArray();
+    
+    // Helper function to check if an index exists
+    const indexExists = (indexes: any[], fieldName: string) => {
+      return indexes.some(index => index.key && index.key[fieldName] !== undefined);
+    };
+    
+    // Create album indexes if they don't exist
+    if (!indexExists(albumIndexes, 'artist')) {
+      await albumsCollection.createIndex({ artist: 1 });
+    }
+    if (!indexExists(albumIndexes, 'genre')) {
+      await albumsCollection.createIndex({ genre: 1 });
+    }
+    if (!indexExists(albumIndexes, 'release_year')) {
+      await albumsCollection.createIndex({ release_year: 1 });
+    }
+    
+    // Create favorite indexes if they don't exist
+    if (!indexExists(favoriteIndexes, 'userId')) {
+      await favoritesCollection.createIndex({ userId: 1 });
+    }
+    if (!indexExists(favoriteIndexes, 'id')) {
+      await favoritesCollection.createIndex({ id: 1 });
+    }
+    
+    // Create user indexes if they don't exist
+    if (!indexExists(userIndexes, 'email')) {
+      await usersCollection.createIndex({ email: 1 }, { unique: true });
+    }
+    
+    console.log('Database indexes verified');
+  } catch (error) {
+    console.error('Error managing indexes:', error);
+    // Continue execution even if index management fails
+  }
   
   // Only seed if the collection is empty
   const albumCount = await albumsCollection.countDocuments();

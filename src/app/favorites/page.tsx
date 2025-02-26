@@ -16,30 +16,44 @@ import {
     AlertDialogFooter 
 } from "@/components/ui/alert-dialog";
 import AlbumAvatar from "@/components/album-avatar";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function Favorites() {
   const [favorites, setFavorites] = useState<Album[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
-    const fetchFavorites = async () => {
-      try {
-        const response = await fetch('/api/favorites');
-        if (!response.ok) {
-          throw new Error("Failed to fetch favorites");
-        }
-        const data = await response.json();
-        setFavorites(data);
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'An unknown error occurred');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    // Redirect if not authenticated
+    if (status === "unauthenticated") {
+      router.push("/login");
+      toast.error("Please login to view your favorites");
+      return;
+    }
 
-    fetchFavorites();
-  }, []);
+    if (status === "authenticated") {
+      const fetchFavorites = async () => {
+        try {
+          const response = await fetch('/api/favorites');
+          if (!response.ok) {
+            throw new Error("Failed to fetch favorites");
+          }
+          const data = await response.json();
+          setFavorites(data);
+        } catch (error) {
+          setError(error instanceof Error ? error.message : 'An unknown error occurred');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchFavorites();
+    }
+  }, [status, router]);
 
   const removeAllFavorites = async () => {
     try {
@@ -50,10 +64,20 @@ export default function Favorites() {
         throw new Error("Failed to delete favorites");
       }
       setFavorites([]);
+      toast.success("All favorites removed");
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
+      toast.error("Failed to remove favorites");
     }
   };
+
+  if (status === "loading") {
+    return <p>Loading...</p>;
+  }
+
+  if (status === "unauthenticated") {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <div className="w-full pt-5">
@@ -87,24 +111,28 @@ export default function Favorites() {
       {error && <p className="text-red-500">Error: {error}</p>}
       {!isLoading && !error && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full">
-          {favorites.map(favorite => (
-            <Card key={favorite.id} className="flex flex-col justify-between h-full w-full">
-              <CardHeader className="flex flex-row justify-between items-start">
-              <div className="flex flex-row gap-3 items-center justify-center">
-                  <AlbumAvatar />
-                  <div className="flex flex-col justify-center">
-                    <CardTitle>{favorite.title}</CardTitle>
-                    <CardDescription>by {favorite.artist}</CardDescription>
+          {favorites.length === 0 ? (
+            <p>You haven't added any favorites yet.</p>
+          ) : (
+            favorites.map(favorite => (
+              <Card key={favorite.id} className="flex flex-col justify-between h-full w-full">
+                <CardHeader className="flex flex-row justify-between items-start">
+                <div className="flex flex-row gap-3 items-center justify-center">
+                    <AlbumAvatar />
+                    <div className="flex flex-col justify-center">
+                      <CardTitle>{favorite.title}</CardTitle>
+                      <CardDescription>by {favorite.artist}</CardDescription>
+                    </div>
                   </div>
-                </div>
-                <Heart fill="#ef4444" className="w-5 h-5 text-red-500" />
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p>Genre: {favorite.genre}</p>
-                <p>Release Year: {favorite.release_year}</p>
-              </CardContent>
-            </Card>
-          ))}
+                  <Heart fill="#ef4444" className="w-5 h-5 text-red-500" />
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p>Genre: {favorite.genre}</p>
+                  <p>Release Year: {favorite.release_year}</p>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       )}
     </div>

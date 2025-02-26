@@ -6,6 +6,9 @@ import { Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import AlbumAvatar from "@/components/album-avatar";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -14,6 +17,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [artist, setArtist] = useState<string>("");
   const [genre, setGenre] = useState<string>("");
+  const { data: session } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchAlbumsAndFavorites = async () => {
@@ -26,23 +31,24 @@ export default function Home() {
           query += `${query ? "&" : "?"}genre=${genre}`;
         }
 
-        const [albumsResponse, favoritesResponse] = await Promise.all([
-          fetch(`/api/albums${query}`),
-          fetch('/api/favorites')
-        ]);
+        const albumsResponse = await fetch(`/api/albums${query}`);
 
         if (!albumsResponse.ok) {
           throw new Error("Failed to fetch albums");
         }
-        if (!favoritesResponse.ok) {
-          throw new Error("Failed to fetch favorite albums");
-        }
 
         const albumsData = await albumsResponse.json();
-        const favoritesData: Album[] = await favoritesResponse.json();
-
         setAlbums(albumsData);
-        setFavoriteAlbums(new Set(favoritesData.map(album => album.id)));
+
+        // Only fetch favorites if user is logged in
+        if (session?.user) {
+          const favoritesResponse = await fetch('/api/favorites');
+          
+          if (favoritesResponse.ok) {
+            const favoritesData: Album[] = await favoritesResponse.json();
+            setFavoriteAlbums(new Set(favoritesData.map(album => album.id)));
+          }
+        }
       } catch (error) {
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
@@ -51,9 +57,15 @@ export default function Home() {
     };
 
     fetchAlbumsAndFavorites();
-  }, [genre, artist]);
+  }, [genre, artist, session]);
 
   const toggleFavorite = async (album: Album) => {
+    if (!session) {
+      toast.error('Please login to add favorites');
+      router.push('/login');
+      return;
+    }
+
     try {
       if (favoriteAlbums.has(album.id)) {
         // Remove from favorites

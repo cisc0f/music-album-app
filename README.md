@@ -1,36 +1,137 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Music Album Collection Application
+
+A full-stack music application built with Next.js that allows users to browse albums, save favorites, and manage their music collection.
+
+## Features
+
+- User authentication (register/login)
+- Browse music albums with filtering by genre and artist
+- Save favorite albums to your personal collection
+- Responsive design for mobile and desktop
+- Protected routes for authenticated users
+
+## Tech Stack
+
+- **Frontend**: Next.js 14, React, Tailwind CSS
+- **Backend**: Next.js API routes
+- **Database**: MongoDB
+- **Authentication**: NextAuth.js
+- **Deployment**: Vercel
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js (v18 or later)
+- npm, yarn, pnpm, or bun
+- MongoDB database (Atlas or local)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Running Locally
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/music-album-app.git
+   cd music-album-app
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   # or
+   bun install
+   ```
 
-## Learn More
+3. Set up environment variables:
+   Create a `.env.local` file in the root directory with the following variables:
+   ```
+   MONGODB_URI="your_mongodb_connection_string"
+   MONGODB_DB_NAME="music-app"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your_generated_secret"
+   ```
+   
+   You can generate a secure NEXTAUTH_SECRET using:
+   ```bash
+   openssl rand -base64 32
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   # or
+   bun dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment
 
-## Deploy on Vercel
+This project is configured for continuous deployment with Vercel:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Push changes to the GitHub repository
+2. Vercel automatically builds and deploys the updated application
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To set up your own deployment:
+
+1. Fork this repository
+2. Connect your GitHub account to Vercel
+3. Import the repository in Vercel
+4. Configure the following environment variables in the Vercel dashboard:
+   - `MONGODB_URI`
+   - `MONGODB_DB_NAME`
+   - `NEXTAUTH_URL` (set to your production URL)
+   - `NEXTAUTH_SECRET`
+5. Deploy
+
+## Key Design Decisions
+
+### Architecture
+
+- **Next.js App Router**: Utilized for server-side rendering and API routes in a single framework
+- **API Design**: RESTful endpoints for albums and favorites management
+- **Authentication**: NextAuth.js with JWT strategy and credentials provider
+- **Database**: MongoDB for flexible document storage of user data and album information
+- **Middleware**: Route protection for authenticated-only areas
+
+### Security
+
+- Password hashing with bcrypt
+- Protected API routes with server-side session validation
+- Environment variables for sensitive configuration
+- JWT-based authentication with secure cookies
+
+### Database Schema
+
+- **Users Collection**: Stores user accounts with hashed passwords
+- **Albums Collection**: Stores album information including artist, genre, and cover art
+- **Favorites Collection**: Links users to their favorite albums
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/[...nextauth]` - NextAuth.js authentication endpoint
+- `POST /api/register` - User registration
+
+### Albums
+- `GET /api/albums` - Get all albums with optional genre and artist filters
+
+### Favorites
+- `GET /api/favorites` - Get all favorites for the current user
+- `POST /api/favorites` - Add an album to favorites
+- `DELETE /api/favorites` - Remove all favorites for the current user
+- `DELETE /api/favorites/:id` - Remove a specific favorite by ID
+
+## Pages
+
+- `/` - Home page with album listings
+- `/login` - User login
+- `/register` - User registration
+- `/favorites` - User's favorite albums (protected route)

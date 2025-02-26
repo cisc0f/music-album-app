@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/db';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 // Delete a favorite by ID
 // Example: DELETE /api/favorites/[id]
@@ -8,6 +10,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
     const { db } = await connectToDatabase();
     const favoritesCollection = db.collection('favorites');
     
@@ -20,7 +28,10 @@ export async function DELETE(
       );
     }
     
-    const result = await favoritesCollection.deleteOne({ id: favoriteId });
+    const result = await favoritesCollection.deleteOne({ 
+      id: favoriteId,
+      userId: session.user.id 
+    });
     
     if (result.deletedCount === 0) {
       return NextResponse.json(
@@ -32,9 +43,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'Favorite has been removed' }, { status: 200 });
 
   } catch (error) {
-
     console.error('Error deleting favorite:', error);
-
     return NextResponse.json(
       { error: 'Failed to delete favorite' }, 
       { status: 500 }
