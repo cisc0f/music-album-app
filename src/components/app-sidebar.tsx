@@ -1,4 +1,4 @@
-import { Home, Heart, Settings } from "lucide-react"
+import { Home, Heart } from "lucide-react"
 
 import {
   Sidebar,
